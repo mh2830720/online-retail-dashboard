@@ -1,0 +1,52 @@
+# remove the obsolete `version:` key
+services:
+  db:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mudihuang
+      POSTGRES_PASSWORD: examplepassword
+      POSTGRES_DB: online_retail
+    # data + init scripts
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./data/OnlineRetail.csv:/docker-entrypoint-initdb.d/OnlineRetail.csv
+      - ./db/data:/data      # <-- this line
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    environment:
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_DB: "0"
+
+      # SQLAlchemy / psycopg2 will look for this by default
+      DB_URI:     'postgresql://mudihuang:examplepassword@db:5432/online_retail'
+      DATABASE_URL: 'postgresql://mudihuang:examplepassword@db:5432/online_retail'
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    command: streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+
+volumes:
+  db_data:
+  redis_data:
