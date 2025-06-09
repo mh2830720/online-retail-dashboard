@@ -68,3 +68,19 @@ This dashboard ingests transactional data from the Online Retail CSV, loads it i
 ```bash
 git clone https://github.com/mh2830720/online-retail-dashboard.git
 cd online-retail-dashboard
+```
+### Add your CSV
+Copy your OnlineRetail.csv into the db/init/ directory so that Postgres can load it on startup.
+
+###Clean up previous data (only if re‐running initialization):
+
+```bash
+docker compose down -v
+```
+###Build & launch everything
+
+```bash
+docker compose up --build
+```
+###Open the dashboard
+Navigate to http://localhost:8501 in your browser.
